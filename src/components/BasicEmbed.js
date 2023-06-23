@@ -1,15 +1,18 @@
 import React, { useRef, useEffect } from "react";
+import useWindowSize from "../utils/useWindowSize";
 
 const { tableau } = window;
 
 const BasicEmbed = () => {
   const tableauRef = useRef(null);
+  const windowSize = useWindowSize();
   let viz = null;
   const url = "http://public.tableau.com/views/RegionalSampleWorkbook/Storms";
+
   const options = {
-    hideTabs: true,
-    width: "100%",
-    height: "90vh",
+    hideToolbar: true,
+    width: window.innerWidth,
+    height: window.innerHeight,
     onFirstInteractive: () => {
       console.log("Run this code when the viz has finished loading.");
     },
@@ -17,8 +20,16 @@ const BasicEmbed = () => {
   const hide = () => {
     viz.hide();
   };
-  const show = () => {
-    viz.show();
+  const resizeFixedDashboard = (winsdowSize) => {
+    console.log(window.innerHeight, window.innerWidth);
+    let sheets = viz.getWorkbook().getActiveSheet();
+    sheets.changeSizeAsync({
+      behavior: "EXACTLY",
+      maxSize: {
+        height: winsdowSize.width,
+        width: winsdowSize.height,
+      },
+    });
   };
 
   const exportPDF = () => {
@@ -28,8 +39,25 @@ const BasicEmbed = () => {
   const exportImage = () => {
     viz.showExportImageDialog();
   };
-  const reSize = () => {
-    viz.setFrameSize(parseInt(500, 10), parseInt(500, 10));
+
+  const selectMark = () => {
+    viz
+      .getWorkbook()
+      .getActiveSheet()
+      .getWorksheets()[0]
+      .selectMarksAsync(
+        "Storm Name",
+        "IGOR",
+        tableau.SelectionUpdateType.REPLACE
+      );
+  };
+
+  const clearMark = () => {
+    viz
+      .getWorkbook()
+      .getActiveSheet()
+      .getWorksheets()[0]
+      .clearSelectedMarksAsync();
   };
 
   const getData = () => {
@@ -71,6 +99,23 @@ const BasicEmbed = () => {
       tableau.FilterUpdateType.REPLACE
     );
   };
+  const onMarksSelection = (markEvent) => {
+    markEvent.getMarksAsync().then((marks) => {
+      marks.map((mark) => {
+        var pairs = mark.getPairs();
+        pairs.map((pair) => {
+          console.log(pair.fieldName);
+          console.log(pair.formattedValue);
+        });
+      });
+    });
+  };
+  const listenToMarkSelection = () => {
+    viz.addEventListener(
+      tableau.TableauEventName.MARKS_SELECTION,
+      onMarksSelection
+    );
+  };
 
   const initTableau = () => {
     viz = new tableau.Viz(tableauRef.current, url, options);
@@ -78,19 +123,21 @@ const BasicEmbed = () => {
 
   useEffect(() => {
     initTableau();
+    listenToMarkSelection();
     return () => {
       if (viz) {
         viz.dispose();
       }
     };
-  }, []);
+  }, [windowSize]);
+
   return (
     <>
       <button type="button" onClick={hide}>
-        Hide-Tableau
+        Hide
       </button>{" "}
-      <button type="button" onClick={show}>
-        Show-Tableau
+      <button type="button" onClick={resizeFixedDashboard}>
+        ResizeFixed
       </button>{" "}
       <button type="button" onClick={exportPDF}>
         Export to PDF
@@ -98,11 +145,14 @@ const BasicEmbed = () => {
       <button type="button" onClick={exportImage}>
         Export to Image
       </button>{" "}
-      <button type="button" onClick={reSize}>
-        Resize
-      </button>{" "}
       <button type="button" onClick={getData}>
         Get Data
+      </button>{" "}
+      <button type="button" onClick={selectMark}>
+        select data
+      </button>{" "}
+      <button type="button" onClick={clearMark}>
+        clear data
       </button>{" "}
       <button type="button" onClick={getFilter}>
         Get Filter Names
