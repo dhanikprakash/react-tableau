@@ -79,16 +79,7 @@ const BasicEmbed = () => {
       });
   };
 
-  const getFilter = () => {
-    viz
-      .getWorkbook()
-      .getActiveSheet()
-      .getWorksheets()[0]
-      .getFiltersAsync()
-      .then((x) => {
-        x.map((item) => console.log(item.$4));
-      });
-  };
+
   function getFilterNames() {
 
 
@@ -124,7 +115,18 @@ const BasicEmbed = () => {
     );
   };
   const onMarksSelection = (markEvent) => {
-    getFilterNames();
+
+    markEvent.getMarksAsync().then(function (marks) {
+      if (marks.length > 0) {
+        var selectedField = marks[0].getPairs()[0];
+        var fieldName = selectedField.fieldName;
+        var formattedValue = selectedField.formattedValue;
+
+        console.log("Field Name:", fieldName);
+        console.log("Formatted Value:", formattedValue);
+      }
+    });
+
     markEvent.getMarksAsync().then((marks) => {
       marks.map((mark) => {
         var pairs = mark.getPairs();
@@ -179,7 +181,7 @@ const BasicEmbed = () => {
       <button type="button" onClick={clearMark}>
         clear data
       </button>{" "}
-      <button type="button" onClick={getFilter}>
+      <button type="button" onClick={getFilterNames}>
         Get Filter Names
       </button>{" "}
       <div id="controls">
