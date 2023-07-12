@@ -15,6 +15,7 @@ const BasicEmbed = () => {
     height: window.innerHeight,
     onFirstInteractive: () => {
       console.log("Run this code when the viz has finished loading.");
+
     },
   };
   const hide = () => {
@@ -88,11 +89,34 @@ const BasicEmbed = () => {
         x.map((item) => console.log(item.$4));
       });
   };
+  function getFilterNames() {
+
+
+    viz.getWorkbook().getActiveSheet().getWorksheets().map(function (sheet) {
+      console.log(sheet.getName())
+      sheet.getFiltersAsync().then(function (filters) {
+        filters.forEach(function (filter) {
+          var filterName = filter.getFieldName();
+          var selectedValue = filter.getAppliedValues().map(function (value) {
+            return value.formattedValue;
+          });
+
+          console.log("Filter Name: " + filterName);
+          console.log("Selected Value: " + selectedValue);
+
+        });
+
+
+      });
+    })
+
+  }
 
   const yearFilter = (event) => {
     const workbook = viz.getWorkbook();
     const activeSheet = workbook.getActiveSheet();
     const sheets = activeSheet.getWorksheets();
+    console.log(sheets)
     sheets[0].applyFilterAsync(
       "YEAR(Date)",
       event.target.value,
@@ -100,6 +124,7 @@ const BasicEmbed = () => {
     );
   };
   const onMarksSelection = (markEvent) => {
+    getFilterNames();
     markEvent.getMarksAsync().then((marks) => {
       marks.map((mark) => {
         var pairs = mark.getPairs();
@@ -149,7 +174,7 @@ const BasicEmbed = () => {
         Get Data
       </button>{" "}
       <button type="button" onClick={selectMark}>
-        select data
+        show selected data
       </button>{" "}
       <button type="button" onClick={clearMark}>
         clear data
