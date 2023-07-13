@@ -78,24 +78,28 @@ const BasicEmbed = () => {
       });
   };
 
+  function getSheetData() {
+    viz
+      .getWorkbook()
+      .getActiveSheet()
+      .getWorksheets()
+      .map(function (sheet) {
+        console.log(sheet.getName());
+        var sheetName = sheet.getName();
+
+        sheet.getUnderlyingDataAsync().then(function (tableInfo) {
+          var columns = tableInfo.getColumns();
+          var columnNames = columns.map(function (column) {
+            return column.getFieldName();
+          });
+
+          console.log("Sheet Name: " + sheetName);
+          console.log("Column Names: " + columnNames);
+        });
+      });
+  }
+
   function getFilterNames() {
-    // viz
-    //   .getWorkbook()
-    //   .getActiveSheet()
-    //   .getWorksheets()
-    //   .map(function (sheet) {
-    //     console.log(sheet.getName());
-    //     sheet.getFiltersAsync().then(function (filters) {
-    //       filters.forEach(function (filter) {
-    //         var filterName = filter.getFieldName();
-    //         var filterType = filter.getFilterType();
-
-    //         console.log("Dhanik Filter Name: " + filterName);
-    //         console.log("Dhanik Filter Type: " + filterType);
-    //       });
-    //     });
-    //   });
-
     viz
       .getWorkbook()
       .getActiveSheet()
@@ -268,6 +272,9 @@ const BasicEmbed = () => {
       </button>{" "}
       <button type="button" onClick={getFilterNames}>
         Get Filter Names
+      </button>{" "}
+      <button type="button" onClick={getSheetData}>
+        Get Sheet Data
       </button>{" "}
       <div id="controls">
         Year:{" "}
