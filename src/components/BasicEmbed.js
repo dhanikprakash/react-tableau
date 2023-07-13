@@ -79,6 +79,23 @@ const BasicEmbed = () => {
   };
 
   function getFilterNames() {
+    // viz
+    //   .getWorkbook()
+    //   .getActiveSheet()
+    //   .getWorksheets()
+    //   .map(function (sheet) {
+    //     console.log(sheet.getName());
+    //     sheet.getFiltersAsync().then(function (filters) {
+    //       filters.forEach(function (filter) {
+    //         var filterName = filter.getFieldName();
+    //         var filterType = filter.getFilterType();
+
+    //         console.log("Dhanik Filter Name: " + filterName);
+    //         console.log("Dhanik Filter Type: " + filterType);
+    //       });
+    //     });
+    //   });
+
     viz
       .getWorkbook()
       .getActiveSheet()
@@ -87,28 +104,91 @@ const BasicEmbed = () => {
         console.log(sheet.getName());
         sheet.getFiltersAsync().then(function (filters) {
           filters.forEach(function (filter) {
-            if (filter.getType() === tableau.FilterType.CATEGORICAL) {
-              filter.getAppliedValuesAsync().then(function (filterValues) {
-                var selectedValues = filterValues.map(function (value) {
-                  return value.formattedValue;
-                });
-
-                console.log("Selected Values: " + selectedValues);
-              });
-            }
-
             var filterName = filter.getFieldName();
-            var selectedValue = filter.getAppliedValues().map(function (value) {
-              return value.formattedValue;
-            });
-
-            console.log("Filter Name: " + filterName);
-            console.log("Selected Value: " + selectedValue);
+            var filterType = filter.getFilterType();
+            debugger;
+            switch (filterType) {
+              case tableau.FilterType.CATEGORICAL:
+                getCategoricalFilterValues(filterName, filter);
+                break;
+              case tableau.FilterType.QUANTITATIVE:
+                getQuantitativeFilterValues(filterName, filter);
+                break;
+              case tableau.FilterType.HIERARCHICAL:
+                getHierarchicalFilterValues(filterName, filter);
+                break;
+              case tableau.FilterType.RELATIVE_DATE:
+                getRelativeDateFilterValues(filterName, filter);
+                break;
+              default:
+                console.log("Filter type not supported: " + filterType);
+            }
           });
         });
       });
   }
 
+  // Function to retrieve and display values for a categorical filter
+  function getCategoricalFilterValues(filterName, filter) {
+    console.log("Dhanik getCategoricalFilterValues: " + filterName);
+    let filterValues = filter.getAppliedValues();
+
+    filterValues.map(function (value) {
+      console.log(value.formattedValue);
+    });
+  }
+
+  // Function to retrieve and display values for a quantitative filter
+  function getQuantitativeFilterValues(filterName, filter) {
+    console.log("Dhanik getQuantitativeFilterValues: " + filterName);
+    let filterRange = filter.getRange();
+
+    var minValue = filterRange.min.formattedValue;
+    var maxValue = filterRange.max.formattedValue;
+
+    console.log(
+      "Quantitative Filter - Name: " +
+        filterName +
+        ", Range: " +
+        minValue +
+        " to " +
+        maxValue
+    );
+  }
+
+  // Function to retrieve and display values for a hierarchical filter
+  function getHierarchicalFilterValues(filterName, filter) {
+    filter.getHierarchicalValuesAsync().then(function (filterValues) {
+      var selectedValues = filterValues.map(function (value) {
+        return value.formattedValue;
+      });
+
+      console.log(
+        "Hierarchical Filter - Name: " +
+          filterName +
+          ", Values: " +
+          selectedValues
+      );
+    });
+  }
+
+  // Function to retrieve and display values for a relative date filter
+  function getRelativeDateFilterValues(filterName, filter) {
+    var periodType = filter.getPeriod();
+    var rangeN = filter.getRangeN();
+    var rangeType = filter.getRangeType();
+
+    console.log(
+      "Relative Date Filter - Name: " +
+        filterName +
+        ", Period Type: " +
+        periodType +
+        ", Range N: " +
+        rangeN +
+        ", Range Type: " +
+        rangeType
+    );
+  }
   const yearFilter = (event) => {
     const workbook = viz.getWorkbook();
     const activeSheet = workbook.getActiveSheet();
