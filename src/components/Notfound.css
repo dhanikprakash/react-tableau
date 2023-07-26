@@ -1,0 +1,27 @@
+
+.notfound {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Nunito Sans";
+    color: var(--blue);
+    font-size: 1em;
+    height: 100vh;
+}
+
+h2 {
+    font-weight: bold;
+}
+
+
+
+@media screen and (max-width:768px) {
+    body {
+        display: block;
+    }
+
+    .container {
+        margin-top: 70px;
+        margin-bottom: 70px;
+    }
+}
